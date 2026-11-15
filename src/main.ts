@@ -81,7 +81,26 @@ class CakeSortApp {
 
   constructor() {
     this.meta = loadMeta();
+    const ytAudio = ytPlayables.isAudioEnabled();
+    this.meta.soundEnabled = this.meta.soundEnabled && ytAudio;
     sound.enabled = this.meta.soundEnabled;
+
+    ytPlayables.onAudioEnabledChange((enabled) => {
+      this.meta.soundEnabled = enabled;
+      sound.enabled = enabled;
+      const soundBtn = document.getElementById('btn-sound');
+      if (soundBtn) soundBtn.textContent = enabled ? '🔊' : '🔇';
+      saveMeta(this.meta);
+    });
+
+    ytPlayables.onPause(() => {
+      saveMeta(this.meta);
+      sound.pauseAll();
+    });
+
+    ytPlayables.onResume(() => {
+      sound.resumeAll();
+    });
 
     const wrap = document.getElementById('canvas-wrap')!;
     this.scene3d = new CakeScene3D(wrap, (plateId) => this.handlePlateTap(plateId));
@@ -429,6 +448,7 @@ class CakeSortApp {
         this.meta.cakesBakedByFlavor[completedFlavor] =
           (this.meta.cakesBakedByFlavor[completedFlavor] ?? 0) + 1;
         saveMeta(this.meta);
+        ytPlayables.sendScore(this.meta.totalCakesBaked).catch(() => {});
 
         const comboTag = this.comboCount > 1 ? ` • Combo x${this.comboCount}!` : '';
         this.showToast(`${flavorSpec.shortName} Cake Baked! +${earned} 🪙${comboTag}`, true);
@@ -474,6 +494,10 @@ class CakeSortApp {
     }
     saveMeta(this.meta);
     this.updateMetaUI();
+
+    // YouTube Playables score reporting & natural break interstitial ad
+    ytPlayables.sendScore(this.meta.totalCakesBaked).catch(() => {});
+    ytPlayables.requestInterstitialAd().catch(() => {});
 
     document.getElementById('win-heading')!.textContent =
       level % 5 === 0 ? 'Chef’s Special Served!' : 'Delicious Work!';
@@ -566,6 +590,10 @@ class CakeSortApp {
 
     saveMeta(this.meta);
     this.updateMetaUI();
+
+    // YouTube Playables score reporting & natural break interstitial ad
+    ytPlayables.sendScore(this.meta.totalCakesBaked).catch(() => {});
+    ytPlayables.requestInterstitialAd().catch(() => {});
     this.updateBoosterUI();
     this.runTypeSafeEvaluation();
   }
@@ -877,6 +905,36 @@ class CakeSortApp {
     }
     daily.appendChild(claimBtn);
     this.drawerContent.appendChild(daily);
+
+    // YouTube Playables Rewarded Ad: Sponsor Patisserie Bonus
+    const rewarded = document.createElement('div');
+    rewarded.style.cssText = 'background:#ffffff;border:1px solid var(--apple-hairline);border-radius:18px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
+    rewarded.innerHTML = `
+      <div>
+        <h3 style="margin:0 0 4px;font-size:15px;font-weight:700;">🎬 Sponsor Bonus</h3>
+        <p style="margin:0;font-size:12px;color:var(--apple-muted);">Watch a short clip: <b>+100 Coins</b> & <b>+1 Whisk</b></p>
+      </div>
+    `;
+    const watchBtn = document.createElement('button');
+    watchBtn.className = 'btn-primary';
+    watchBtn.style.cssText = 'flex:0 0 auto;padding:8px 16px;font-size:12px;background:var(--apple-purple);';
+    watchBtn.textContent = 'Watch Ad';
+    watchBtn.addEventListener('click', async () => {
+      const earned = await ytPlayables.requestRewardedAd('patisserie-bonus-100-coins');
+      if (earned) {
+        this.meta.coins += 100;
+        this.meta.boosters.shuffle += 1;
+        saveMeta(this.meta);
+        sound.coinClink();
+        this.showToast('+100 🪙 & +1 Whisk received!', true);
+        this.updateMetaUI();
+        this.renderBakeryDrawer();
+      } else {
+        this.showToast('Reward ad closed or skipped.');
+      }
+    });
+    rewarded.appendChild(watchBtn);
+    this.drawerContent.appendChild(rewarded);
 
     const label = document.createElement('div');
     label.style.cssText = 'font-size:12px;font-weight:700;color:var(--apple-muted);text-transform:uppercase;letter-spacing:0.04em;margin:12px 0 8px;';

@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- YouTube Playables Official Web SDK (Must load before any game code) -->
+<script src="https://www.youtube.com/game_api/v1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -336,17 +338,76 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=
 let S;
 try{S=JSON.parse(localStorage.getItem("cakeSort3d.v1"))||null;}catch(e){S=null;}
 S=S||{coins:40,stars:{},deco:{},unlocked:1,sound:true};
-function save(){try{localStorage.setItem("cakeSort3d.v1",JSON.stringify(S));}catch(e){}}
+function save(){ saveCloudData(); }
 
-/* ---------- YouTube Playables Compliance Handshake ---------- */
-window.addEventListener("DOMContentLoaded",()=>{
-  if(window.YTPlayables){
+/* ---------- Official YouTube Playables SDK Integration (ytgame) ---------- */
+function initPlayablesSDK(){
+  if(typeof window !== "undefined" && window.ytgame){
     try{
-      if(typeof window.YTPlayables.firstFrameReady==='function') window.YTPlayables.firstFrameReady();
-      if(typeof window.YTPlayables.gameReady==='function') window.YTPlayables.gameReady();
-    }catch(e){}
+      // 1. First frame ready handshake
+      if(window.ytgame.game && typeof window.ytgame.game.firstFrameReady === "function"){
+        window.ytgame.game.firstFrameReady();
+      }
+      // 2. Audio settings hook
+      if(window.ytgame.system && typeof window.ytgame.system.isAudioEnabled === "function"){
+        S.sound = window.ytgame.system.isAudioEnabled();
+        paintSnd();
+      }
+      if(window.ytgame.system && typeof window.ytgame.system.onAudioEnabledChange === "function"){
+        window.ytgame.system.onAudioEnabledChange((enabled)=>{
+          S.sound = enabled;
+          paintSnd();
+        });
+      }
+      // 3. Pause & Resume hooks
+      if(window.ytgame.system && typeof window.ytgame.system.onPause === "function"){
+        window.ytgame.system.onPause(()=>{
+          if(AC) AC.suspend();
+          save();
+        });
+      }
+      if(window.ytgame.system && typeof window.ytgame.system.onResume === "function"){
+        window.ytgame.system.onResume(()=>{
+          if(AC && S.sound) AC.resume();
+        });
+      }
+      // 4. Cloud load data
+      if(window.ytgame.game && typeof window.ytgame.game.loadData === "function"){
+        window.ytgame.game.loadData().then((dataStr)=>{
+          if(dataStr){
+            try{
+              const cloud = JSON.parse(dataStr);
+              if(cloud && cloud.unlocked){
+                S = Object.assign(S, cloud);
+                paintSnd();
+                if($("scr-home")) renderHome();
+              }
+            }catch(e){}
+          }
+        }).catch(()=>{});
+      }
+      // 5. Game ready handshake
+      if(window.ytgame.game && typeof window.ytgame.game.gameReady === "function"){
+        window.ytgame.game.gameReady();
+      }
+    }catch(err){
+      if(window.ytgame.health && typeof window.ytgame.health.logWarning === "function"){
+        window.ytgame.health.logWarning();
+      }
+    }
   }
-});
+}
+window.addEventListener("DOMContentLoaded", initPlayablesSDK);
+
+function saveCloudData(){
+  try{
+    const raw = JSON.stringify(S);
+    localStorage.setItem("cakeSort3d.v1", raw);
+    if(typeof window !== "undefined" && window.ytgame && window.ytgame.game && typeof window.ytgame.game.saveData === "function"){
+      window.ytgame.game.saveData(raw).catch(()=>{});
+    }
+  }catch(e){}
+}
 
 /* ---------- Web Audio Synthesizer (Auto-suspend on blur) ---------- */
 let AC=null;
@@ -566,6 +627,18 @@ function win(){
   S.stars[state.level]=Math.max(S.stars[state.level]||0,stars);
   S.unlocked=Math.max(S.unlocked,Math.min(state.level+1,LEVELS.length));
   save();sndWin();
+
+  // YouTube Playables SDK: Send score & trigger interstitial ad breakpoint
+  if(typeof window !== "undefined" && window.ytgame){
+    try{
+      if(window.ytgame.engagement && typeof window.ytgame.engagement.sendScore === "function"){
+        window.ytgame.engagement.sendScore({ value: S.coins }).catch(()=>{});
+      }
+      if(window.ytgame.ads && typeof window.ytgame.ads.requestInterstitialAd === "function"){
+        window.ytgame.ads.requestInterstitialAd().catch(()=>{});
+      }
+    }catch(e){}
+  }
   $("win-title").textContent=state.level>=LEVELS.length?"Master Pâtissier!":"Cake Baked to Perfection!";
   $("win-coins").textContent="+"+state.earned;
   const ws=$("win-stars");ws.innerHTML="";
