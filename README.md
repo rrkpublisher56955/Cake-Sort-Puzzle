@@ -222,6 +222,11 @@ npm run preview
 
 The compiled output in `/dist` is a single-directory, zero-CDN web application ready for direct deployment to **YouTube Playables**, **GitHub Pages**, or any static web host.
 
+### ⚡ Instant Standalone Demo (Zero Dependencies)
+For rapid offline evaluation or quick local play without Node.js:
+- Simply open [`standalone.html`](file:///c:/Users/Admin/Downloads/GitHub/Cake-Sort-Puzzle/standalone.html) directly in any modern web browser (Safari, Chrome, Edge).
+- 100% self-contained single-file HTML5/CSS3/ES6 patisserie experience featuring Apple frosted glass aesthetics, Web Audio synthesizer, and the depth-first solvable level engine.
+
 ---
 
 <p align="center">
