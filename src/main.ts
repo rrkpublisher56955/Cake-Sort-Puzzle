@@ -70,7 +70,7 @@ class CakeSortApp {
   private typesafeStatusLabel = document.getElementById('typesafe-status-label')!;
   private modalTypesafe = document.getElementById('modal-typesafe')!;
 
-  private btnYtSuite = document.getElementById('btn-yt-suite')!;
+  private btnYtSuite = document.getElementById('btn-yt-suite');
   private modalYtSuite = document.getElementById('modal-yt-suite')!;
   private ytTestList = document.getElementById('yt-test-list')!;
 
@@ -205,7 +205,16 @@ class CakeSortApp {
     });
 
     // YouTube Playables Test Suite Handlers
-    this.btnYtSuite.addEventListener('click', () => this.openYouTubeSuite());
+    if (this.btnYtSuite) {
+      this.btnYtSuite.addEventListener('click', () => this.openYouTubeSuite());
+    }
+    // Allow developers and QA to open the test suite with 'T' key or window.openYtSuite()
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'T' || e.key === 't') && !(e.target instanceof HTMLInputElement)) {
+        this.openYouTubeSuite();
+      }
+    });
+    (window as any).openYtSuite = () => this.openYouTubeSuite();
     document.getElementById('btn-close-yt-suite')!.addEventListener('click', () => {
       this.modalYtSuite.classList.add('hidden');
     });
