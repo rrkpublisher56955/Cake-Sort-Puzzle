@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- YouTube Playables Official SDK (Must be loaded before any game code) -->
+    <script src="https://www.youtube.com/game_api/v1"></script>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#fcf6f0" />
+    <meta name="description" content="Cake Sort Puzzle 3D — Ultra-aesthetic Apple HIG & YouTube Playables certified 3D patisserie sorting game powered by TypeSafe AI System One." />
+    <title>Cake Sort Puzzle 3D — Patisserie Studio</title>
+    <script type="module" crossorigin src="./assets/index-DIpUxNj4.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BiId57OK.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- 3D WebGL Viewport -->
+      <div id="canvas-wrap"></div>
+
+      <!-- Top HUD (Apple Frosted Glass Vibrant Chrome) -->
+      <header class="hud-top">
+        <div class="hud-row">
+          <button id="btn-bakery" class="pill-btn bakery-pill" title="My Bakery & Decorations">
+            <span id="bakery-badge-icon" class="pill-icon">🥐</span>
+            <div class="pill-stack">
+              <span id="bakery-rank-label" class="pill-title">Home Kitchen</span>
+              <span class="pill-sub">⭐ <b id="hud-stars">0</b> • Decor</span>
+            </div>
+            <span id="decor-notify-dot" class="notify-dot hidden"></span>
+          </button>
+
+          <!-- TypeSafe AI System One Routing Chip -->
+          <button id="btn-typesafe" class="typesafe-chip" title="TypeSafe AI System One Evaluation & Routing">
+            <span class="ai-sparkle">✦</span>
+            <div class="ai-text-stack">
+              <span class="ai-title">TypeSafe AI</span>
+              <span id="typesafe-status-label" class="ai-sub">Evaluating...</span>
+            </div>
+          </button>
+
+          <div class="level-card">
+            <div class="level-header">
+              <span id="hud-level" class="level-badge">LEVEL 1</span>
+              <span id="hud-level-title" class="level-title">Morning Glaze</span>
+            </div>
+            <div class="order-progress-wrap">
+              <div id="order-icons" class="order-icons"></div>
+              <div class="progress-track">
+                <div id="order-progress-fill" class="progress-fill"></div>
+              </div>
+              <span id="hud-cakes-count" class="cakes-count">0/3</span>
+            </div>
+          </div>
+
+          <div class="hud-actions">
+            <div class="coin-pill" id="btn-coin-shop" title="Bakery Coins">
+              <span class="coin-glyph">🪙</span>
+              <span id="hud-coins">160</span>
+            </div>
+            <div class="icon-btn-group">
+              <button id="btn-hint" class="icon-btn" title="Smart Hint">💡</button>
+              <button id="btn-restart" class="icon-btn" title="Restart Level">🔄</button>
+              <button id="btn-sound" class="icon-btn" title="Toggle Sound">🔊</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Floating Toast & Combo Layer -->
+      <div id="toast-layer" class="toast-layer"></div>
+
+      <!-- Level 1 Onboarding Banner -->
+      <div id="tutorial-banner" class="tutorial-banner hidden">
+        <span class="tut-emoji">🍰</span>
+        <span id="tutorial-text">Tap a plate to lift slices, then tap a matching or empty plate. Merge <b>6</b> to bake a cake!</span>
+      </div>
+
+      <!-- Bottom Booster Dock (Apple Floating Material Dock) -->
+      <footer class="hud-bottom">
+        <div class="booster-dock">
+          <button class="booster-btn" data-booster="undo" id="boost-undo" title="Undo Last Move">
+            <span class="b-icon">↩️</span>
+            <span class="b-label">Undo</span>
+            <span class="b-badge" id="badge-undo">4</span>
+          </button>
+          <button class="booster-btn" data-booster="extraPlate" id="boost-extraPlate" title="Add Counter Plate">
+            <span class="b-icon">🍽️</span>
+            <span class="b-label">+Plate</span>
+            <span class="b-badge" id="badge-extraPlate">2</span>
+          </button>
+          <button class="booster-btn" data-booster="shuffle" id="boost-shuffle" title="Whisk & Redistribute">
+            <span class="b-icon">🪄</span>
+            <span class="b-label">Whisk</span>
+            <span class="b-badge" id="badge-shuffle">2</span>
+          </button>
+          <button class="booster-btn" data-booster="autoBake" id="boost-autoBake" title="Instant Cake Merge">
+            <span class="b-icon">✨</span>
+            <span class="b-label">Auto-Cake</span>
+            <span class="b-badge" id="badge-autoBake">1</span>
+          </button>
+          <button class="booster-btn decor-shortcut" id="btn-open-decor" title="Patisserie Studio Decor">
+            <span class="b-icon">🎨</span>
+            <span class="b-label">Studio</span>
+            <span class="b-badge shop-tag">DECOR</span>
+          </button>
+        </div>
+      </footer>
+
+      <!-- Level Win Modal -->
+      <div id="modal-win" class="modal-backdrop hidden">
+        <div class="modal-card win-card">
+          <div class="win-ribbon">ORDER COMPLETE!</div>
+          <div class="win-stars">⭐⭐⭐</div>
+          <h2 id="win-heading">Delicious Work!</h2>
+          <p id="win-subtitle" class="modal-sub">All cakes baked & served fresh.</p>
+          <div class="reward-row">
+            <div class="reward-chip"><span>🪙</span> +<b id="win-coins">60</b> Coins</div>
+            <div class="reward-chip"><span>⭐</span> +<b id="win-stars">1</b> Stars</div>
+          </div>
+          <div id="unlock-callout" class="unlock-callout hidden"></div>
+          <div class="modal-btn-row">
+            <button id="btn-win-decor" class="btn-secondary">🎨 Bakery Shop</button>
+            <button id="btn-next-level" class="btn-primary">Next Level ➜</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stuck / No Moves Modal -->
+      <div id="modal-stuck" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="stuck-emoji">🧁</div>
+          <h2>Counter Jammed!</h2>
+          <p class="modal-sub">No matching moves left on the table. Use a booster or try fresh!</p>
+          <div class="stuck-actions">
+            <button id="btn-stuck-plate" class="btn-primary">🍽️ Add +Plate</button>
+            <button id="btn-stuck-whisk" class="btn-secondary">🪄 Use Whisk</button>
+            <button id="btn-stuck-undo" class="btn-secondary">↩️ Undo Move</button>
+            <button id="btn-stuck-retry" class="btn-ghost">🔄 Restart Level</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TypeSafe AI System One Evaluation & Routing Modal -->
+      <div id="modal-typesafe" class="modal-backdrop hidden">
+        <div class="modal-card typesafe-modal-card">
+          <div class="typesafe-modal-header">
+            <div class="typesafe-tag"><span class="ai-sparkle">✦</span> TypeSafe System One</div>
+            <button id="btn-close-typesafe" class="close-btn" aria-label="Close">✕</button>
+          </div>
+          <h2>Tactical Decision & Routing Engine</h2>
+          <p class="modal-sub">Real-time evaluation model analyzing board entropy, deadlock risk, and strategic routing.</p>
+          
+          <div id="typesafe-route-card" class="typesafe-route-card">
+            <div class="route-badge" id="typesafe-route-badge">DIRECT MERGE</div>
+            <h3 id="typesafe-route-heading">Cake Ready to Bake</h3>
+            <p id="typesafe-route-desc">Transfer 2 slices from Plate #1 to Plate #3 to complete 6-slice cake.</p>
+          </div>
+
+          <div class="typesafe-metrics-grid">
+            <div class="metric-card">
+              <span class="m-label">Board Entropy</span>
+              <span class="m-val" id="metric-entropy">0.32</span>
+              <span class="m-sub">Dispersion ratio</span>
+            </div>
+            <div class="metric-card">
+              <span class="m-label">Stuck Risk</span>
+              <span class="m-val" id="metric-stuck">8%</span>
+              <span class="m-sub">Deadlock probability</span>
+            </div>
+            <div class="metric-card">
+              <span class="m-label">Model Confidence</span>
+              <span class="m-val" id="metric-confidence">94%</span>
+              <span class="m-sub">Jev judgment score</span>
+            </div>
+            <div class="metric-card">
+              <span class="m-label">Player Flow</span>
+              <span class="m-val" id="metric-flow">Flow</span>
+              <span class="m-sub">Engagement state</span>
+            </div>
+          </div>
+
+          <div class="typesafe-judgments-list" id="typesafe-judgments-list"></div>
+
+          <div class="modal-btn-row">
+            <button id="btn-apply-typesafe-hint" class="btn-primary">Apply Recommended Route</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bakery Meta & Decorations Drawer -->
+      <div id="modal-bakery" class="modal-backdrop drawer-backdrop hidden">
+        <div class="bakery-drawer">
+          <div class="drawer-header">
+            <div class="drawer-title-group">
+              <span id="drawer-rank-icon" class="drawer-icon">🥐</span>
+              <div>
+                <h2 id="drawer-rank-name">Cozy Home Kitchen</h2>
+                <div class="rank-bar-row">
+                  <span id="drawer-stars-text">0 Stars</span>
+                  <div class="rank-track"><div id="drawer-rank-fill" class="rank-fill"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="drawer-right">
+              <div class="coin-pill small"><span>🪙</span><span id="drawer-coins">160</span></div>
+              <button id="btn-close-bakery" class="close-btn" aria-label="Close">✕</button>
+            </div>
+          </div>
+
+          <div class="drawer-tabs">
+            <button class="tab-btn active" data-tab="surfaces">🎨 Surfaces & Plates</button>
+            <button class="tab-btn" data-tab="props">💐 3D Props</button>
+            <button class="tab-btn" data-tab="recipes">📖 Cake Menu</button>
+            <button class="tab-btn" data-tab="supplies">🎁 Daily & Boosters</button>
+          </div>
+
+          <div id="drawer-content" class="drawer-content"></div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

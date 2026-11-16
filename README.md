@@ -70,10 +70,10 @@ When tested locally or with the [Playables Test Suite](https://developers.google
 default-src 'none'; script-src 'report-sample' 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.youtube.com/game_api/v0 https://www.youtube.com/game_api/v0/ https://www.youtube.com/game_api/v1 https://www.youtube.com/game_api/v1/; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com; connect-src 'self' blob: data:; sandbox allow-pointer-lock allow-same-origin allow-scripts; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:
 ```
 
-### 4. Built-in Automated Test Harness
-Tap the `▶️` button in the top HUD or press `T` to launch the **YouTube Playables Test Suite**:
+### 4. Built-in Automated Test Harness & Developer Console
+Execute `runYouTubePlayablesTest()` in the browser Developer Console to run the official **YouTube Playables Certification Suite**:
 - Runs live automated audits across all 9 certification criteria.
-- Provides interactive viewport simulation toggles: **Auto Responsive**, **Portrait 9:16**, and **Landscape 16:9**.
+- Validates official SDK script tag, lifecycle callbacks, and Web Audio suspension.
 
 ---
 
@@ -177,10 +177,10 @@ For testing locally in Chrome with DevTools Header Overrides, the game validates
 Content-Security-Policy: default-src 'none'; script-src 'report-sample' 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.youtube.com/game_api/v0 https://www.youtube.com/game_api/v0/ https://www.youtube.com/game_api/v1 https://www.youtube.com/game_api/v1/; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com; connect-src 'self' blob: data:; sandbox allow-pointer-lock allow-same-origin allow-scripts; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:
 ```
 
-### Automated In-Game Test Suite
-Tap the `▶️` button on the top HUD to run the automated **YouTube Playables Certification Suite**:
+### Automated In-Game Test Suite & Certification
+Run `runYouTubePlayablesTest()` directly in the browser console to verify the automated **YouTube Playables Certification Suite**:
 - Runs live automated audits across all 9 SDK criteria.
-- Real-time viewport aspect ratio simulation: **Auto Responsive**, **Portrait 9:16 (Mobile)**, and **Landscape 16:9 (Desktop)**.
+- Validates official SDK script tag, lifecycle callbacks, and Web Audio suspension.
 
 ---
 

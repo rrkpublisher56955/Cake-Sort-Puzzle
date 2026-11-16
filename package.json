@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "node -e \"import('fs').then(fs => fs.copyFileSync('index.template.html', 'index.html'))\" && vite",
+    "build": "tsc && node -e \"import('fs').then(fs => fs.copyFileSync('index.template.html', 'index.html'))\" && vite build && node scripts/sync-gh-pages.js",
     "preview": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {

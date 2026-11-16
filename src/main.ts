@@ -70,10 +70,6 @@ class CakeSortApp {
   private typesafeStatusLabel = document.getElementById('typesafe-status-label')!;
   private modalTypesafe = document.getElementById('modal-typesafe')!;
 
-  private btnYtSuite = document.getElementById('btn-yt-suite');
-  private modalYtSuite = document.getElementById('modal-yt-suite')!;
-  private ytTestList = document.getElementById('yt-test-list')!;
-
   private modalWin = document.getElementById('modal-win')!;
   private modalStuck = document.getElementById('modal-stuck')!;
   private modalBakery = document.getElementById('modal-bakery')!;
@@ -204,40 +200,13 @@ class CakeSortApp {
       this.applyTypeSafeRoute();
     });
 
-    // YouTube Playables Test Suite Handlers
-    if (this.btnYtSuite) {
-      this.btnYtSuite.addEventListener('click', () => this.openYouTubeSuite());
-    }
-    // Allow developers and QA to open the test suite with 'T' key or window.openYtSuite()
-    window.addEventListener('keydown', (e) => {
-      if ((e.key === 'T' || e.key === 't') && !(e.target instanceof HTMLInputElement)) {
-        this.openYouTubeSuite();
-      }
-    });
-    (window as any).openYtSuite = () => this.openYouTubeSuite();
-    document.getElementById('btn-close-yt-suite')!.addEventListener('click', () => {
-      this.modalYtSuite.classList.add('hidden');
-    });
-    document.getElementById('btn-close-yt-done')!.addEventListener('click', () => {
-      this.modalYtSuite.classList.add('hidden');
-    });
-    document.getElementById('btn-rerun-yt-suite')!.addEventListener('click', () => {
-      this.runYtPlayablesTests();
-    });
-
-    // Viewport Simulator Ratio buttons
-    document.querySelectorAll<HTMLButtonElement>('.ratio-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.ratio-btn').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const ratio = btn.dataset.ratio;
-        const app = document.getElementById('app')!;
-        app.classList.remove('sim-portrait', 'sim-landscape');
-        if (ratio === 'portrait') app.classList.add('sim-portrait');
-        else if (ratio === 'landscape') app.classList.add('sim-landscape');
-        window.dispatchEvent(new Event('resize'));
-      });
-    });
+    // Expose programmatic test suite runner for YouTube Playables QA / certification
+    (window as any).runYouTubePlayablesTest = async () => {
+      console.log('%c[YouTube Playables SDK] Running Official Compliance Audit...', 'color: #0071e3; font-weight: bold;');
+      const report = await ytPlayables.runComplianceTestSuite();
+      console.table(report);
+      return report;
+    };
   }
 
   private startLevel(levelNum: number) {
@@ -328,31 +297,6 @@ class CakeSortApp {
     this.scene3d.setSelection(move.fromId, validTargets, this.hintPair);
     sound.selectPlate();
     this.showToast(`TypeSafe Route: Plate #${move.fromId} ➜ Plate #${move.toId}`);
-  }
-
-  private openYouTubeSuite() {
-    this.modalYtSuite.classList.remove('hidden');
-    this.runYtPlayablesTests();
-  }
-
-  private async runYtPlayablesTests() {
-    this.ytTestList.innerHTML = '<div class="test-loading">Executing YouTube Playables compliance audit...</div>';
-    const report = await ytPlayables.runComplianceTestSuite();
-
-    this.ytTestList.innerHTML = '';
-    report.forEach((t) => {
-      const item = document.createElement('div');
-      item.className = 'test-item';
-      item.innerHTML = `
-        <span class="test-status-pill ${t.status}">${t.status}</span>
-        <div class="test-body">
-          <div class="test-name">${t.name}</div>
-          <div class="test-desc">${t.description}</div>
-          <div style="font-size:10px;color:var(--apple-blue);margin-top:2px;">${t.detail}</div>
-        </div>
-      `;
-      this.ytTestList.appendChild(item);
-    });
   }
 
   private handlePlateTap(plateId: number) {
